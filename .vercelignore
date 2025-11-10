@@ -1,0 +1,4 @@
+# Ignorar dependencias de desarrollo y caché de NestJS/Node
+node_modules
+dist
+.env
