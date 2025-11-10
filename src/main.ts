@@ -1,26 +1,22 @@
-// src/main.ts
+// src/main.ts (Opción Simplificada)
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ExpressAdapter } from '@nestjs/platform-express';
-import * as express from 'express';
+import { ExpressAdapter } from '@nestjs/platform-express'; 
+const express = require('express');
 
-// Se utiliza para exportar la función handler
+// 1. Exporta la función handler
 export const server = express();
 
 const bootstrap = async () => {
   const app = await NestFactory.create(
     AppModule,
-    new ExpressAdapter(server),
+    new ExpressAdapter(server), // Usa el handler exportado
   );
   
-  // Tu configuración global
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api'); 
   app.enableCors();
 
-  // NO LLAMAR a app.listen()
   await app.init();
 };
 
 bootstrap();
-
-// Vercel usará 'server' como la función serverless
