@@ -1,22 +1,43 @@
-// src/main.ts (Opción Simplificada)
+// src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ExpressAdapter } from '@nestjs/platform-express'; 
-const express = require('express');
+import { ExpressAdapter } from '@nestjs/platform-express';
+// Usar require() es más robusto para Express en el entorno Node.js
+const express = require('express'); 
 
-// 1. Exporta la función handler
-export const server = express();
+// 1. Variable global para cachear el handler del servidor
+let cachedServer; 
 
-const bootstrap = async () => {
+async function bootstrapServer() {
+  // Si el servidor ya está inicializado, lo devolvemos inmediatamente (Warm Start)
+  if (cachedServer) {
+    return cachedServer;
+  }
+  
+  const expressApp = express();
   const app = await NestFactory.create(
     AppModule,
-    new ExpressAdapter(server), // Usa el handler exportado
+    new ExpressAdapter(expressApp),
   );
-  
-  app.setGlobalPrefix('api'); 
+
+  // Tu configuración global
+  app.setGlobalPrefix('api');
   app.enableCors();
 
-  await app.init();
-};
+  // CRÍTICO: Inicializar módulos (DB, Mailer, etc.) sin iniciar el servidor
+  await app.init(); 
 
-bootstrap();
+  // 2. Almacenar el handler de Express en la caché global
+  cachedServer = expressApp; 
+  return cachedServer;
+}
+
+// 🛑 EXPORTACIÓN POR DEFECTO: La función handler que Vercel llama.
+export default async (req, res) => {
+    // Ejecuta el proceso de bootstrap solo si no está cacheado (Cold Start)
+    if (!cachedServer) {
+        await bootstrapServer();
+    }
+    // 3. Pasar la petición y respuesta al handler de Express cacheado
+    cachedServer(req, res);
+};
