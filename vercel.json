@@ -1,0 +1,27 @@
+ 
+{
+  "version": 2,
+  "builds": [
+    { 
+      "src": "src/main.ts", 
+      "use": "@vercel/node",
+      "config": { 
+        "excludeFiles": [
+          "**/*"
+        ]
+      }
+    }
+  ],
+  "routes": [
+    { 
+      "src": "/(.*)",
+      "dest": "src/main.ts" 
+    }
+  ],
+  "crons": [
+    { 
+      "path": "/api/traker/run-track", 
+      "schedule": "*/3 * * * *"
+    }
+  ]
+}
