@@ -21,7 +21,7 @@
   "crons": [
     { 
       "path": "/api/traker/run-track", 
-      "schedule": "*/5 * * * *"
+      "schedule": "0 17 * * *"
     }
   ]
 }
