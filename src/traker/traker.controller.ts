@@ -14,6 +14,17 @@ export class TrakerController {
     return { message: 'Tracking process executed.' };
   }
 
+  @Get('monitor-track')
+  @HttpCode(HttpStatus.OK)
+  async monitorTracking() {
+    // Internamente, ejecuta la misma lógica que el POST
+    await this.trakerService.trackValue(); 
+    return { 
+      message: 'Tracking process executed successfully via Monitor GET.',
+      status: 'OK'
+    };
+  }
+
   @Post()
   create(@Body() createTrakerDto: CreateTrakerDto) {
    // return this.trakerService.create(createTrakerDto);
