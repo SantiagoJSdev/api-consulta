@@ -1,13 +1,26 @@
+// src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import * as express from 'express';
 
-// Función asíncrona para inicializar la app de NestJS
+// Se utiliza para exportar la función handler
+export const server = express();
+
 const bootstrap = async () => {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(
+    AppModule,
+    new ExpressAdapter(server),
+  );
+  
+  // Tu configuración global
   app.setGlobalPrefix('api');
   app.enableCors();
-  await app.listen(3000);
+
+  // NO LLAMAR a app.listen()
+  await app.init();
 };
 
-// Llamamos a la función de inicialización
 bootstrap();
+
+// Vercel usará 'server' como la función serverless
