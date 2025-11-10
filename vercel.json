@@ -17,11 +17,5 @@
       "src": "/(.*)",
       "dest": "src/main.ts" 
     }
-  ],
-  "crons": [
-    { 
-      "path": "/api/traker/run-track", 
-      "schedule": "0 17 * * *"
-    }
   ]
 }
