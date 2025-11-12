@@ -59,8 +59,11 @@ export class TrakerService {
   }
 
   async trackValue(): Promise<void> {
-    const newValue = await this.scrapeWebsiteForValue();
-    if (newValue === null) return;
+    const newValueString = await this.scrapeWebsiteForValue();
+    if (newValueString === null) return;
+
+    const newValue = this.normalizeValue(newValueString); 
+    if (isNaN(newValue)) return; // Si no es un número válido, salimos.
 
     // 1. Obtener el inicio del día de hoy
     const startOfDay = new Date();
@@ -74,7 +77,10 @@ export class TrakerService {
       .sort({ createdAt: -1 });
 
     // 3. Comparar y decidir si guardar
-    if (!lastValueToday || lastValueToday.value !== newValue) {
+    if (
+      !lastValueToday ||
+      this.normalizeValue(lastValueToday.value) !== newValue
+    ) {
       this.logger.log(`Nuevo valor (${newValue}) detectado. Guardando en el historial...`);
       const createdValue = new this.trackedValueModel({ value: newValue });
       await createdValue.save()
@@ -95,5 +101,12 @@ export class TrakerService {
     } else {
       this.logger.log('El valor es el mismo que el último guardado hoy. No se hace nada.');
     }
+  }
+
+  private normalizeValue(value: string): number {
+    if (!value) return NaN;
+    // Reemplazar la coma decimal por un punto y convertir a número
+    const normalizedString = value.replace(',', '.'); 
+    return parseFloat(normalizedString);
   }
 }

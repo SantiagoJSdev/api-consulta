@@ -26,7 +26,7 @@ async function bootstrapServer() {
 
   // CRÍTICO: Inicializar módulos (DB, Mailer, etc.) sin iniciar el servidor
   await app.init(); 
-
+ 
   // 2. Almacenar el handler de Express en la caché global
   cachedServer = expressApp; 
   return cachedServer;
