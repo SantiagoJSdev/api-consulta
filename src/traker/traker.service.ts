@@ -79,7 +79,7 @@ export class TrakerService {
     // 3. Comparar y decidir si guardar
     if (
       !lastValueToday ||
-      this.normalizeValue(lastValueToday.value) !== newValue
+      lastValueToday.value !== newValue
     ) {
       this.logger.log(`Nuevo valor (${newValue}) detectado. Guardando en el historial...`);
       const createdValue = new this.trackedValueModel({ value: newValue });

@@ -6,7 +6,7 @@ export type TrackedValueDocument = HydratedDocument<TrackedValue>;
 @Schema({ timestamps: true })
 export class TrackedValue {
   @Prop({ required: true })
-  value: string;
+  value: number;
 }
 
 export const TrackedValueSchema = SchemaFactory.createForClass(TrackedValue);
