@@ -58,6 +58,7 @@ export class TrakerService {
     }
   }
 
+  /*
   async trackValue(): Promise<void> {
     const newValueString = await this.scrapeWebsiteForValue();
     if (newValueString === null) return;
@@ -102,6 +103,49 @@ export class TrakerService {
       this.logger.log('El valor es el mismo que el último guardado hoy. No se hace nada.');
     }
   }
+  */
+
+  async trackValue(): Promise<void> {
+    const newValueString = await this.scrapeWebsiteForValue();
+    if (newValueString === null) return;
+
+    // newValue es ahora un número limpio (ej. 233.5576)
+    const newValue = this.normalizeValue(newValueString); 
+    if (isNaN(newValue)) return; 
+
+    // 🛑 CORRECCIÓN: Buscar el valor más reciente ABSOLUTO (de hoy, ayer o cuando sea)
+    const lastValue = await this.trackedValueModel
+      .findOne({}) // No aplicamos filtro de fecha
+      .sort({ createdAt: -1 }); // Ordenamos para obtener el último registro
+
+    // 🛑 Comparamos si no hay registro O si el último valor guardado es diferente al nuevo
+    if (
+      !lastValue ||
+      lastValue.value !== newValue // La comparación es directa entre números
+    ) {
+      this.logger.log(`Nuevo valor (${newValue}) detectado. Guardando en el historial...`);
+      // Guardamos el número limpio
+      const createdValue = new this.trackedValueModel({ value: newValue }); 
+      await createdValue.save()
+
+      // 4. Enviar el correo electrónico
+      this.logger.log('Enviando correo de notificación...');
+      await this.mailerService.sendMail({
+        to: this.configService.get<string>('MAIL_RECIPIENTS'),
+        subject: '¡El precio del dólar ha cambiado!',
+        html: `
+          <h1>Actualización del Precio del Dólar</h1>
+          <p>El nuevo valor del dólar es: <b>${newValue}</b></p>
+          <p>Valor anterior: ${lastValue?.value || 'No había registro previo.'}</p> 
+          `,
+      });
+      this.logger.log('Correo enviado exitosamente.');
+
+    } else {
+      this.logger.log('El valor es el mismo que el último guardado. No se hace nada.');
+    }
+}
+
 
   private normalizeValue(value: string): number {
     if (!value) return NaN;
