@@ -14,7 +14,8 @@ import {
 @Injectable()
 export class TrakerService {
   private readonly logger = new Logger(TrakerService.name);
-
+  private readonly PRECISION = 4;
+  
   constructor(
     @InjectModel(TrackedValue.name)
     private trackedValueModel: Model<TrackedValueDocument>,
@@ -110,23 +111,35 @@ export class TrakerService {
     if (newValueString === null) return;
 
     // newValue es ahora un número limpio (ej. 233.5576)
-    const newValue = this.normalizeValue(newValueString); 
-    if (isNaN(newValue)) return; 
+    const rawNewValue = this.normalizeValue(newValueString); 
+    if (isNaN(rawNewValue)) return; 
 
+    // 1. Redondear el nuevo valor para comparación y guardado
+    const newValue = parseFloat(rawNewValue.toFixed(this.PRECISION)); // Redondea a 4 decimales y asegura el tipo number
+ 
     // 🛑 CORRECCIÓN: Buscar el valor más reciente ABSOLUTO (de hoy, ayer o cuando sea)
     const lastValue = await this.trackedValueModel
       .findOne({}) // No aplicamos filtro de fecha
       .sort({ createdAt: -1 }); // Ordenamos para obtener el último registro
 
+      // 3. Normalizar el último valor guardado para una comparación precisa
+    let normalizedLastValue: number | null = null;
+    if (lastValue) {
+      // Redondeamos el valor de la DB al mismo número de decimales que el nuevo valor.
+      normalizedLastValue = parseFloat(lastValue.value.toFixed(this.PRECISION));
+    }
+
     // 🛑 Comparamos si no hay registro O si el último valor guardado es diferente al nuevo
-    if (
+        
+      if (
       !lastValue ||
-      lastValue.value !== newValue // La comparación es directa entre números
+      normalizedLastValue !== newValue 
     ) {
       this.logger.log(`Nuevo valor (${newValue}) detectado. Guardando en el historial...`);
-      // Guardamos el número limpio
+      // 5. Guardamos el número limpio y redondeado
       const createdValue = new this.trackedValueModel({ value: newValue }); 
       await createdValue.save()
+
 
       // 4. Enviar el correo electrónico
       this.logger.log('Enviando correo de notificación...');
@@ -147,10 +160,16 @@ export class TrakerService {
 }
 
 
-  private normalizeValue(value: string): number {
+ /* private normalizeValue(value: string): number {
     if (!value) return NaN;
     // Reemplazar la coma decimal por un punto y convertir a número
     const normalizedString = value.replace(',', '.'); 
     return parseFloat(normalizedString);
+  }
+    */
+   private normalizeValue(value: string): number {
+    if (!value) return NaN; 
+    const normalizedString = value.replace(',', '.');  
+    return parseFloat(normalizedString); 
   }
 }
