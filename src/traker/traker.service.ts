@@ -142,6 +142,7 @@ export class TrakerService {
 
 
       // 4. Enviar el correo electrónico
+      /*
       this.logger.log('Enviando correo de notificación...');
       await this.mailerService.sendMail({
         to: this.configService.get<string>('MAIL_RECIPIENTS'),
@@ -153,6 +154,7 @@ export class TrakerService {
           `,
       });
       this.logger.log('Correo enviado exitosamente.');
+      */
 
     } else {
       this.logger.log('El valor es el mismo que el último guardado. No se hace nada.');
@@ -199,6 +201,8 @@ export class TrakerService {
       const trimmedValue = value.trim();  
       const normalizedString = trimmedValue.replace(',', '.');  
       const result = parseFloat(normalizedString); 
+      console.log(result, 'este es el valor');
+      
       return result;
-}
+  }
 }
