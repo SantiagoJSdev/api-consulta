@@ -168,8 +168,23 @@ export class TrakerService {
   }
     */
    private normalizeValue(value: string): number {
-    if (!value) return NaN; 
-    const normalizedString = value.replace(',', '.');  
-    return parseFloat(normalizedString); 
+    if (!value) return NaN;
+
+    // 1. Limpieza agresiva: Elimina todos los caracteres que NO sean dígitos (0-9), coma (,), o punto (.).
+    // Esto quita símbolos de moneda, espacios, letras, etc.
+    const cleanedValue = value.replace(/[^0-9.,]/g, '');
+
+    // 2. Reemplazar la coma decimal por un punto (solo si hay una coma para reemplazar)
+    let normalizedString = cleanedValue.replace(',', '.'); 
+    
+    // 3. (OPCIONAL pero seguro): Asegurar que solo el último punto sea el separador decimal 
+    // (útil si hay separadores de miles que también son puntos, aunque no aplica al BCV)
+    // Para el BCV, basta con asegurar que solo haya un punto.
+    
+    // 4. Convertir a número (parseFloat solo funcionará correctamente si usa el punto como decimal)
+    const result = parseFloat(normalizedString);
+
+    // 5. Devolver el resultado (un número o NaN)
+    return result;
   }
 }
