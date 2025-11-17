@@ -1,4 +1,5 @@
 // src/main.ts
+ 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ExpressAdapter } from '@nestjs/platform-express';
@@ -41,3 +42,26 @@ export default async (req, res) => {
     // 3. Pasar la petición y respuesta al handler de Express cacheado
     cachedServer(req, res);
 };
+
+ 
+/*
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  
+  // Tu configuración global (Se mantiene)
+  app.setGlobalPrefix('api');
+  app.enableCors();
+
+  // Iniciar el servidor en el puerto 3000
+  await app.listen(3000); 
+  
+  // Imprimir la URL base al iniciar
+  console.log(`Application is running on: ${await app.getUrl()}`);
+}
+
+bootstrap();
+
+*/

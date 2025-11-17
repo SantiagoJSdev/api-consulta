@@ -142,7 +142,7 @@ export class TrakerService {
 
 
       // 4. Enviar el correo electrónico
-      /*
+      
       this.logger.log('Enviando correo de notificación...');
       await this.mailerService.sendMail({
         to: this.configService.get<string>('MAIL_RECIPIENTS'),
@@ -154,7 +154,7 @@ export class TrakerService {
           `,
       });
       this.logger.log('Correo enviado exitosamente.');
-      */
+      
 
     } else {
       this.logger.log('El valor es el mismo que el último guardado. No se hace nada.');
