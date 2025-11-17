@@ -106,6 +106,7 @@ export class TrakerService {
   }
   */
 
+  /*
   async trackValue(): Promise<void> {
     const newValueString = await this.scrapeWebsiteForValue();
     if (newValueString === null) return;
@@ -161,6 +162,7 @@ export class TrakerService {
     }
 }
 
+*/
 
  /* private normalizeValue(value: string): number {
     if (!value) return NaN;
@@ -195,6 +197,67 @@ export class TrakerService {
   */
 
   // En traker.service.ts
+
+  private getNumberValue(doc: TrackedValueDocument | null): number | null {
+    if (!doc || !doc.value) return null;
+    
+    // Si el valor es un objeto Decimal128, lo convertimos a string y luego a number
+    // toDecimal128() puede no existir, si lo está guardando como un Number
+    if (typeof doc.value.toString === 'function') {
+        const valueString = doc.value.toString();
+        return parseFloat(parseFloat(valueString).toFixed(this.PRECISION));
+    }
+    
+    // Si sigue siendo un Number (como en local), lo tratamos como tal
+    return parseFloat(doc.value.toFixed(this.PRECISION));
+  }
+
+  async trackValue(): Promise<void> {
+    const newValueString = await this.scrapeWebsiteForValue();
+    if (newValueString === null) return;
+
+    const rawNewValue = this.normalizeValue(newValueString); 
+    if (isNaN(rawNewValue)) return; 
+
+    // El nuevo valor siempre se redondea antes de guardar/comparar
+    const newValue = parseFloat(rawNewValue.toFixed(this.PRECISION)); 
+
+    // 1. Buscar el valor más reciente ABSOLUTO
+    const lastValue = await this.trackedValueModel
+      .findOne({}) 
+      .sort({ createdAt: -1 }); 
+
+    // 2. Normalizar el último valor guardado (ahora Decimal128) para comparación
+    const normalizedLastValue = this.getNumberValue(lastValue); 
+    
+    // 3. Comparamos
+    if (
+      !lastValue ||
+      normalizedLastValue !== newValue
+    ) {
+      this.logger.log(`Nuevo valor (${newValue}) detectado. Guardando en el historial...`);
+      
+      // Guardamos el número (Mongoose lo convertirá a Decimal128)
+      const createdValue = new this.trackedValueModel({ value: newValue }); 
+      await createdValue.save()
+
+      // 4. Enviar el correo electrónico
+      this.logger.log('Enviando correo de notificación...');
+      await this.mailerService.sendMail({
+        to: this.configService.get<string>('MAIL_RECIPIENTS'),
+        subject: '¡El precio del dólar ha cambiado!',
+        html: `
+          <h1>Actualización del Precio del Dólar</h1>
+          <p>El nuevo valor del dólar es: <b>${newValue}</b></p>
+          <p>Valor anterior: ${normalizedLastValue !== null ? normalizedLastValue : 'No había registro previo.'}</p> 
+          `,
+      });
+      this.logger.log('Correo enviado exitosamente.');
+
+    } else {
+      this.logger.log('El valor es el mismo que el último guardado. No se hace nada.');
+    }
+  }
 
   private normalizeValue(value: string): number {
       if (!value) return NaN; 

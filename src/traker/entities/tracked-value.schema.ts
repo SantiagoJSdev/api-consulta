@@ -7,7 +7,7 @@ export type TrackedValueDocument = HydratedDocument<TrackedValue>;
 
 @Schema({ timestamps: true })
 export class TrackedValue { 
-  @Prop({ required: true, type: MongooseSchema.Types.Double }) 
+  @Prop({ required: true, type: MongooseSchema.Types.Decimal128 }) 
   value: number; 
 }
 
