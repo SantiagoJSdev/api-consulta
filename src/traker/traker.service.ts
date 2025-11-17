@@ -167,7 +167,9 @@ export class TrakerService {
     return parseFloat(normalizedString);
   }
     */
-   private normalizeValue(value: string): number {
+
+
+  /* private normalizeValue(value: string): number {
     if (!value) return NaN;
 
     // 1. Limpieza agresiva: Elimina todos los caracteres que NO sean dígitos (0-9), coma (,), o punto (.).
@@ -187,4 +189,16 @@ export class TrakerService {
     // 5. Devolver el resultado (un número o NaN)
     return result;
   }
+
+  */
+
+  // En traker.service.ts
+
+  private normalizeValue(value: string): number {
+      if (!value) return NaN; 
+      const trimmedValue = value.trim();  
+      const normalizedString = trimmedValue.replace(',', '.');  
+      const result = parseFloat(normalizedString); 
+      return result;
+}
 }
