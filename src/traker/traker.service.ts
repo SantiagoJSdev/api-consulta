@@ -236,9 +236,9 @@ export class TrakerService {
       normalizedLastValue !== newValue
     ) {
       this.logger.log(`Nuevo valor (${newValue}) detectado. Guardando en el historial...`);
-      
+      const valueToSave = newValue.toFixed(this.PRECISION);
       // Guardamos el número (Mongoose lo convertirá a Decimal128)
-      const createdValue = new this.trackedValueModel({ value: newValue }); 
+      const createdValue = new this.trackedValueModel({ value: valueToSave }); 
       await createdValue.save()
 /*
       // 4. Enviar el correo electrónico
