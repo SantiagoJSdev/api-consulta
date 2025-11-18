@@ -240,7 +240,7 @@ export class TrakerService {
       // Guardamos el número (Mongoose lo convertirá a Decimal128)
       const createdValue = new this.trackedValueModel({ value: valueToSave }); 
       await createdValue.save()
-/*
+
       // 4. Enviar el correo electrónico
       this.logger.log('Enviando correo de notificación...');
       await this.mailerService.sendMail({
@@ -253,7 +253,7 @@ export class TrakerService {
           `,
       });
       this.logger.log('Correo enviado exitosamente.');
-      */
+   
     } else {
       this.logger.log('El valor es el mismo que el último guardado. No se hace nada.');
     }
